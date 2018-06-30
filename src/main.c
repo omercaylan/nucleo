@@ -36,6 +36,7 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include "FreeRTOS.h"
 #include "main.h"
 
 /** @addtogroup STM32F4xx_HAL_Examples

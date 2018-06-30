@@ -7,11 +7,13 @@ PROJECT_SRC = src
 STM_SRC = Drivers/STM32F4xx_HAL_Driver/Src/
 USB_CORE_SRC = Drivers/STM32_USB_Device_Library/Core/Src
 USB_HID_SRC = Drivers/STM32_USB_Device_Library/Class/HID/Src/
+FREERTOS_SOURCE = FreeRTOS/Source
 
 vpath %.c $(PROJECT_SRC)
 vpath %.c $(STM_SRC)
 vpath %.c $(USB_CORE_SRC)
 vpath %.c $(USB_HID_SRC)
+vpath %.c $(FREERTOS_SOURCE)
 
 SRCS = main.c
 
@@ -23,6 +25,17 @@ SRCS += system_stm32f4xx.c
 SRCS += usbd_conf.c
 SRCS += usbd_desc.c
 SRCS += newlib_stubs.c
+
+# FreeRTOS
+SRCS += croutine.c
+SRCS += list.c
+SRCS += queue.c
+SRCS += event_groups.c
+SRCS += timers.c
+SRCS += tasks.c
+SRCS += stream_buffer.c
+SRCS += portable/GCC/ARM_CM4F/port.c
+SRCS += portable/MemMang/heap_1.c
 
 EXT_SRCS = stm32f4xx_hal.c
 EXT_SRCS += stm32f4xx_hal_rcc.c
@@ -45,6 +58,8 @@ INC_DIRS += Drivers/STM32_USB_Device_Library/Core/Inc/
 INC_DIRS += Drivers/STM32_USB_Device_Library/Class/HID/Inc/
 INC_DIRS += Drivers/CMSIS/Device/ST/STM32F4xx/Include/
 INC_DIRS += Drivers/CMSIS/Include/
+INC_DIRS += FreeRTOS/Source/include
+INC_DIRS += FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 INCLUDE = $(addprefix -I,$(INC_DIRS))
 
@@ -52,6 +67,7 @@ DEFS = -DSTM32F401xE
 
 CFLAGS  = -ggdb -O0
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork -Wl,--gc-sections
+CFLAGS += -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -std=gnu90 -ffunction-sections -fdata-sections
 
 WFLAGS += -Wall -Wextra -Warray-bounds -Wno-unused-parameter
 

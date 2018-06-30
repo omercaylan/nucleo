@@ -1,8 +1,9 @@
-stm32f4-nucleo-basic-template
-=============================
+The original template for STM32 Nucleo F401RE board with GCC ARM Embedded toolchain from
+https://github.com/metabr/stm32-nucleo-f401re-basic-template
 
-Template to build projects for STM32 Nucleo F401RE board with GCC ARM Embedded toolchain
+FreeRTOSConfig.h file from
+https://github.com/cnoviello/stm32-nucleof4/tree/master/stm32-nucleof4-freertos
 
-This repository is a demo project based on one provided by STMicroelectronics with STM32Cube firmware version 1.3.0.
+FreeRTOS from
+https://github.com/cjlano/freertos
 
-You may use it if you want to build programs to run on Nucleo F401RE boards with GNU ARM toolchain (https://launchpad.net/gcc-arm-embedded) and includes Eclipse project files.
