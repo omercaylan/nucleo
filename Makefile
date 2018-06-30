@@ -1,7 +1,7 @@
 CC      = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
 
-PROJECT_NAME = template
+PROJECT_NAME = nucleo
 
 PROJECT_SRC = src
 STM_SRC = Drivers/STM32F4xx_HAL_Driver/Src/
