@@ -1,8 +1,13 @@
 #include "FreeRTOS.h"
 #include "main.h"
+#include "task.h"
 
-static void SystemClock_Config(void);
+#define ledSTACK_SIZE	configMINIMAL_STACK_SIZE
+#define ledPRIORITY		( tskIDLE_PRIORITY + 1UL )
+
 static void Error_Handler(void);
+static void SystemClock_Config(void);
+static void vLEDFlashTask(void *pvParameters);
 
 int main(void)
 {
@@ -32,16 +37,24 @@ int main(void)
 
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-	/* Infinite loop */
+	xTaskCreate(vLEDFlashTask, "LED1", ledSTACK_SIZE, (void *)NULL,
+		    ledPRIORITY, (TaskHandle_t *) NULL);
+
+	vTaskStartScheduler();
+
 	while (1) {
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-		/* Insert delay 100 ms */
 		HAL_Delay(100);
+	}
+}
 
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-		HAL_Delay(300);
+static void vLEDFlashTask(void *pvParameters)
+{
+	for (;;) {
+		vTaskDelay(100);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+		vTaskDelay(400);
+		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 	}
 }
 
