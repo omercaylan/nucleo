@@ -15,7 +15,9 @@ vpath %.c $(USB_CORE_SRC)
 vpath %.c $(USB_HID_SRC)
 vpath %.c $(FREERTOS_SOURCE)
 
-SRCS = main.c
+INDENT_SRC = main.c
+
+SRCS = $(INDENT_SRC)
 
 SRCS += Device/startup_stm32f401xe.s
 
@@ -74,9 +76,14 @@ WFLAGS += -Wall -Wextra -Warray-bounds -Wno-unused-parameter
 LFLAGS = -TDevice/gcc.ld
 
 .PHONY: all
-all: $(PROJECT_NAME)
+all: indent $(PROJECT_NAME)
 
 .PHONY: $(PROJECT_NAME)
+
+
+indent: $(INDENT_SRC)
+	indent -linux $<
+
 $(PROJECT_NAME): $(PROJECT_NAME).elf
 
 $(PROJECT_NAME).elf: $(SRCS) $(EXT_OBJ)
