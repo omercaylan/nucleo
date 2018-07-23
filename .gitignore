@@ -4,3 +4,4 @@
 /*.elf
 /*.hex
 /.gdb_history
+*.swp

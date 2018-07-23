@@ -5,10 +5,12 @@
  *   RAM.ORIGIN: starting address of RAM bank 0
  *   RAM.LENGTH: length of RAM bank 0
  */
+
 MEMORY
 {
   FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
-  RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
+  LOG (rw) : ORIGIN =  0x20000000, LENGTH = 1K
+  RAM (rwx) : ORIGIN = 0x20000000 + LENGTH(LOG), LENGTH = 96K - LENGTH(LOG)
 }
 
 /* Linker script to place sections and symbol values. Should be used together
@@ -188,6 +190,14 @@ SECTIONS
 		*(.stack*)
 	} > RAM
 
+	.logger (NOLOAD):
+	{
+		. = ALIGN(4);
+		__log_start__ = .;
+		*(.logger*)
+		__log_end__ = .;
+	} > LOG
+
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
 	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
@@ -196,4 +206,7 @@ SECTIONS
 	
 	/* Check if data + heap + stack exceeds RAM limit */
 	ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")
+
+	ASSERT( LENGTH(LOG) >= (__log_end__ - __log_start__), "LOG memory usage overflowed!")
 }
+

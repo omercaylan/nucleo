@@ -1,4 +1,5 @@
 #include "FreeRTOS.h"
+#include "logger.h"
 #include "main.h"
 #include "task.h"
 
@@ -11,6 +12,8 @@ static void vLEDFlashTask(void *pvParameters);
 
 int main(void)
 {
+	loggerInit();
+
 	/* STM32F4xx HAL library initialization:
 	   - Configure the Flash prefetch, Flash preread and Buffer caches
 	   - Systick timer is configured by default as source of time base, but user
@@ -50,7 +53,12 @@ int main(void)
 
 static void vLEDFlashTask(void *pvParameters)
 {
+	int i = 0;
 	for (;;) {
+		i++;
+		taskENTER_CRITICAL();
+		loggerPrintf("L%d: a!", i);
+		taskEXIT_CRITICAL();
 		vTaskDelay(100);
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 		vTaskDelay(400);
