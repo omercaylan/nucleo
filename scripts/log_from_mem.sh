@@ -14,5 +14,5 @@ cat <<EOF | nc -q$wait_sec localhost 4444
 dump_image $filename 0x20000000 $n_bytes
 EOF
 
-cat $filename | tr '\0' '\n'
+cat $filename | sed 's/\x0\+/\n/g'
 #xxd $filename
