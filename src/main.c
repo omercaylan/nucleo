@@ -8,7 +8,10 @@
 
 static void Error_Handler(void);
 static void SystemClock_Config(void);
+static void Timer_Config(void);
 static void vLEDFlashTask(void *pvParameters);
+
+static TIM_HandleTypeDef TIM_HandleStruct;
 
 int main(void)
 {
@@ -27,6 +30,7 @@ int main(void)
 
 	/* Configure the System clock to 84 MHz */
 	SystemClock_Config();
+	Timer_Config();
 
 	GPIO_InitTypeDef GPIO_InitStruct;
 
@@ -43,7 +47,10 @@ int main(void)
 	xTaskCreate(vLEDFlashTask, "LED1", ledSTACK_SIZE, (void *)NULL,
 		    ledPRIORITY, (TaskHandle_t *) NULL);
 
+	loggerPrintf("cnt a %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
+
 	vTaskStartScheduler();
+	//Should never pass this point.
 
 	while (1) {
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
@@ -57,6 +64,7 @@ static void vLEDFlashTask(void *pvParameters)
 	for (;;) {
 		i++;
 		taskENTER_CRITICAL();
+		loggerPrintf("cnt x %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
 		loggerPrintf("L%d: a!", i);
 		taskEXIT_CRITICAL();
 		vTaskDelay(100);
@@ -127,6 +135,18 @@ static void SystemClock_Config(void)
 		Error_Handler();
 	}
 
+}
+
+static void Timer_Config(void)
+{
+	__TIM5_CLK_ENABLE();
+	TIM_HandleStruct.Instance = TIM5;
+	TIM_HandleStruct.Init.Prescaler = 4;
+	TIM_HandleStruct.Init.CounterMode = TIM_COUNTERMODE_UP;
+	TIM_HandleStruct.Init.Period = 1000;
+	TIM_HandleStruct.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	HAL_TIM_Base_Init(&TIM_HandleStruct);
+	HAL_TIM_Base_Start(&TIM_HandleStruct);
 }
 
 static void Error_Handler(void)

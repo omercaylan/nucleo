@@ -21,6 +21,7 @@ SRCS += logger.c
 SRCS += Device/startup_stm32f401xe.s
 
 SRCS += stm32f4xx_hal_msp.c
+SRCS += stm32f4xx_hal_tim.c
 SRCS += stm32f4xx_it.c
 SRCS += system_stm32f4xx.c
 SRCS += usbd_conf.c
