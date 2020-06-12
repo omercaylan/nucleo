@@ -77,6 +77,9 @@ static void vLEDFlashTask(void *pvParameters)
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 	for (;;)
 	{
+		if (xSemaphoreTake(osHandles->lock.SPI, 1000))
+		{
+		}
 		i++;
 		taskENTER_CRITICAL();
 		loggerPrintf("cnt x %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
