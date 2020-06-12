@@ -2,19 +2,37 @@
 #include "logger.h"
 #include "main.h"
 #include "task.h"
+#include "semphr.h"
+#include "queue.h"
+#include "osHandles.h"
+#define TASK_LOOP 1
 
-#define ledSTACK_SIZE	configMINIMAL_STACK_SIZE
-#define ledPRIORITY		( tskIDLE_PRIORITY + 1UL )
-
-static void Error_Handler(void);
-static void SystemClock_Config(void);
-static void Timer_Config(void);
-static void vLEDFlashTask(void *pvParameters);
-
+#define ledSTACK_SIZE configMINIMAL_STACK_SIZE
+#define ledPRIORITY (tskIDLE_PRIORITY + 1UL)
+//! check this timer
 static TIM_HandleTypeDef TIM_HandleStruct;
+
+//All system control parameter
+OSHANDLES taskParameter;
+
+void osHandleInit()
+{
+	taskParameter.queue.queueUserData = xQueueCreate(5, sizeof(uint32_t));
+	taskParameter.lock.USER = xSemaphoreCreateMutex();
+}
+
+void parameterInit()
+{
+	//other system parameter init here
+	taskParameter.init = osHandleInit;
+}
+
+// TODO uart setting for debug like printf
 
 int main(void)
 {
+	parameterInit();
+	taskParameter.init();
 	loggerInit();
 
 	/* STM32F4xx HAL library initialization:
@@ -30,8 +48,22 @@ int main(void)
 
 	/* Configure the System clock to 84 MHz */
 	SystemClock_Config();
+	//control This timer
 	Timer_Config();
 
+	xTaskCreate(vLEDFlashTask, "LED1", ledSTACK_SIZE, &taskParameter, ledPRIORITY, &taskParameter.task.userInterface);
+
+	loggerPrintf("cnt a %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
+
+	vTaskStartScheduler();
+	//Should never pass this point.
+}
+
+static void vLEDFlashTask(void *pvParameters)
+{
+
+	OSHANDLES *osHandles = (OSHANDLES *)pvParameters;
+	int i = 0;
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	__GPIOA_CLK_ENABLE();
@@ -43,33 +75,17 @@ int main(void)
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
 
 	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	xTaskCreate(vLEDFlashTask, "LED1", ledSTACK_SIZE, (void *)NULL,
-		    ledPRIORITY, (TaskHandle_t *) NULL);
-
-	loggerPrintf("cnt a %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
-
-	vTaskStartScheduler();
-	//Should never pass this point.
-
-	while (1) {
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-		HAL_Delay(100);
-	}
-}
-
-static void vLEDFlashTask(void *pvParameters)
-{
-	int i = 0;
-	for (;;) {
+	for (;;)
+	{
 		i++;
 		taskENTER_CRITICAL();
 		loggerPrintf("cnt x %d", __HAL_TIM_GetCounter(&TIM_HandleStruct));
 		loggerPrintf("L%d: a!", i);
 		taskEXIT_CRITICAL();
-		vTaskDelay(100);
-		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-		vTaskDelay(400);
+		vTaskDelay(1000);
+		if (i % 2 == 0)
+			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+		vTaskDelay(1000);
 		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
 	}
 }
@@ -118,23 +134,24 @@ static void SystemClock_Config(void)
 	RCC_OscInitStruct.PLL.PLLN = 336;
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
 	RCC_OscInitStruct.PLL.PLLQ = 7;
-	if ((status = HAL_RCC_OscConfig(&RCC_OscInitStruct)) != HAL_OK) {
+	if ((status = HAL_RCC_OscConfig(&RCC_OscInitStruct)) != HAL_OK)
+	{
 		Error_Handler();
 	}
 
 	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
 	   clocks dividers */
 	RCC_ClkInitStruct.ClockType =
-	    (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
-	     RCC_CLOCKTYPE_PCLK2);
+		(RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 |
+		 RCC_CLOCKTYPE_PCLK2);
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+	{
 		Error_Handler();
 	}
-
 }
 
 static void Timer_Config(void)
@@ -151,11 +168,12 @@ static void Timer_Config(void)
 
 static void Error_Handler(void)
 {
-	while (1) {
+	while (1)
+	{
 	}
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 
 /**
   * @brief  Reports the name of the source file and the source line number
@@ -164,13 +182,14 @@ static void Error_Handler(void)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t * file, uint32_t line)
+void assert_failed(uint8_t *file, uint32_t line)
 {
 	/* User can add his own implementation to report the file name and line number,
 	   ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
 	/* Infinite loop */
-	while (1) {
+	while (1)
+	{
 	}
 }
 #endif

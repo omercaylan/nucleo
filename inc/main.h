@@ -53,6 +53,11 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 
+static void Error_Handler(void);
+static void SystemClock_Config(void);
+static void Timer_Config(void);
+static void vLEDFlashTask(void *pvParameters);
+
 #endif /* __MAIN_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

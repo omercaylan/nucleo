@@ -97,3 +97,7 @@ $(PROJECT_NAME).elf: $(SRCS) $(EXT_OBJ)
 
 clean:
 	rm -f *.o $(PROJECT_NAME).elf $(PROJECT_NAME).hex $(PROJECT_NAME).bin
+
+
+flash:
+	@st-flash write  $(PROJECT_NAME).bin 0x8000000
